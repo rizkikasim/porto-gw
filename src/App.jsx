@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import About from './pages/About';
 import Projects from './pages/Projects';
-import TravelKuyDemo from './pages/projects/TravelKuyDemo';
+import Contact from './pages/Contact';
 
 // =========================================================
-// KOMPONEN FOOTER LANGSUNG DI SINI BIAR GA ILANG LAGI
+// KOMPONEN FOOTER LANGSUNG DI SINI
 // =========================================================
 function Footer() {
   const currentYear = new Date().getFullYear();
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) element.scrollIntoView({ behavior: 'smooth' });
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleNavClick = (id) => {
+    if (location.pathname !== '/') {
+      navigate('/', { state: { scrollTo: id } });
+    } else {
+      const element = document.getElementById(id);
+      if (element) element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
@@ -31,9 +38,9 @@ function Footer() {
             <h4 className="text-md font-bold tracking-wide text-teal-100">Quick Links</h4>
             <ul className="text-sm font-semibold space-y-2 text-teal-50">
               <li><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-teal-200 transition-colors">Back to Top</button></li>
-              <li><button onClick={() => scrollToSection('about')} className="hover:text-teal-200 transition-colors">About Me</button></li>
-              <li><button onClick={() => scrollToSection('projects')} className="hover:text-teal-200 transition-colors">Featured Projects</button></li>
-              <li><button onClick={() => scrollToSection('contact')} className="hover:text-teal-200 transition-colors">Contact</button></li>
+              <li><button onClick={() => handleNavClick('about')} className="hover:text-teal-200 transition-colors">About Me</button></li>
+              <li><button onClick={() => handleNavClick('projects')} className="hover:text-teal-200 transition-colors">Featured Projects</button></li>
+              <li><button onClick={() => handleNavClick('contact')} className="hover:text-teal-200 transition-colors">Contact</button></li>
             </ul>
           </div>
           <div className="space-y-3">
@@ -58,9 +65,69 @@ function Footer() {
 }
 
 // =========================================================
-// MAIN APP COMPONENT
+// NAVBAR COMPONENT DENGAN SISTEM SCROLL SECTION CERDAS
 // =========================================================
-const DummyPage = ({ title }) => <div className="text-center text-xl p-10 font-medium text-slate-500">{title} Section Coming Soon!</div>;
+// (Hanya memuat Home, About, Project, Contact sesuai request lu)
+function CustomNavbar({ toggleDarkMode, darkMode }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleNavClick = (id) => {
+    if (id === 'home') {
+      if (location.pathname !== '/') {
+        navigate('/');
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    // Jika sedang di luar page Home (misal di page demo), balik dulu ke Home baru scroll
+    if (location.pathname !== '/') {
+      navigate('/', { state: { scrollTo: id } });
+    } else {
+      // Jika sudah di Home, langsung scroll smooth ke element ID target
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  return (
+    <nav className="w-full border-b border-slate-200/60 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-50 transition-colors duration-500">
+      <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+        <span onClick={() => handleNavClick('home')} className="text-xl font-bold tracking-tight text-slate-900 dark:text-white cursor-pointer">
+          Dev<span className="text-brand">Portfolio</span>
+        </span>
+        
+        
+        <div className="hidden md:flex items-center gap-8 font-semibold text-[15px] text-slate-500 dark:text-slate-400">
+          <button onClick={() => handleNavClick('home')} className="hover:text-brand transition-colors">Home</button>
+          <button onClick={() => handleNavClick('about')} className="hover:text-brand transition-colors">About</button>
+          <button onClick={() => handleNavClick('experience')} className="hover:text-brand transition-colors">Experience</button> {/* <--- TOMBOL BARU */}
+          <button onClick={() => handleNavClick('projects')} className="hover:text-brand transition-colors">Projects</button>
+          <button onClick={() => handleNavClick('contact')} className="hover:text-brand transition-colors">Contact</button>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button
+            onClick={toggleDarkMode}
+            className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ${darkMode ? 'bg-brand' : 'bg-slate-300 dark:bg-slate-700'}`}
+          >
+            <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition duration-300 ${darkMode ? 'translate-x-7' : 'translate-x-0'}`} />
+          </button>
+          <a href="#resume" className="hidden sm:inline-block px-5 py-2 rounded-full bg-brand text-white font-medium text-sm">Download Resume</a>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// =========================================================
+// MAIN APP CONTENT
+// =========================================================
+import TravelKuyDemo from './pages/projects/TravelKuyDemo';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
@@ -81,62 +148,20 @@ export default function App() {
     <Router>
       <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 transition-colors duration-500 font-sans flex flex-col">
         
-        {/* NAVBAR */}
-        <nav className="w-full border-b border-slate-200/60 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-50 transition-colors duration-500">
-          <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Dev<span className="text-brand">Portfolio</span>
-            </span>
-            <div className="hidden md:flex items-center gap-8 font-medium text-[15px] text-slate-500 dark:text-slate-400">
-              <NavbarLink to="/" label="Home" />
-              <NavbarLink to="/about" label="About" />
-              <NavbarLink to="/skills" label="Skills" />
-              <NavbarLink to="/projects" label="Projects" />
-              <NavbarLink to="/research" label="Research" />
-              <NavbarLink to="/experience" label="Experience" />
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={toggleDarkMode}
-                className={`relative inline-flex h-7 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out ${darkMode ? 'bg-brand' : 'bg-slate-300 dark:bg-slate-700'}`}
-              >
-                <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition duration-300 ${darkMode ? 'translate-x-7' : 'translate-x-0'}`} />
-              </button>
-              <a href="#resume" className="hidden sm:inline-block px-5 py-2 rounded-full bg-brand text-white font-medium text-sm">Download Resume</a>
-            </div>
-          </div>
-        </nav>
+        {/* Panggil custom navbar baru kita */}
+        <CustomNavbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
 
-        {/* MAIN CONTENT */}
         <main className="max-w-6xl mx-auto w-full px-6 py-12 flex-1 animate-fade-in">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/skills" element={<DummyPage title="Skills" />} />
-            <Route path="/projects" element={<DummyPage title="Projects" />} />
-            <Route path="/research" element={<DummyPage title="Research" />} />
-            <Route path="/experience" element={<DummyPage title="Experience" />} />
-
-            {/* projects */}
+            {/* Rute halaman demo terpisah tetep aman terpasang */}
             <Route path="/projects/travel-kuy" element={<TravelKuyDemo />} />
           </Routes>
         </main>
 
-        {/* PEMANGGILAN FOOTER MANDIRI */}
         <Footer />
 
       </div>
     </Router>
-  );
-}
-
-function NavbarLink({ to, label }) {
-  const location = useLocation();
-  const isActive = location.pathname === to;
-  return (
-    <Link to={to} className={`relative py-1 transition-colors hover:text-brand ${isActive ? 'text-brand font-semibold' : ''}`}>
-      {label}
-      {isActive && <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-brand rounded-full" />}
-    </Link>
   );
 }
