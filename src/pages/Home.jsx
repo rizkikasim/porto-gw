@@ -60,9 +60,15 @@ export default function Home() {
               </svg>
             </button>
             
-            <button className="w-full sm:w-auto px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-all hover:-translate-y-0.5">
-              Download Resume
-            </button>
+            
+              <a 
+                href="/resume-muhamad-rizki.pdf" 
+                download="Resume_Muhamad_Rizki.pdf" // Nama file saat berhasil didownload user
+                className="inline-block text-center w-full sm:w-auto px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-all hover:-translate-y-0.5"
+              >
+                Download Resume
+              </a>
+
           </div>
         </div>
 
